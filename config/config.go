@@ -17,18 +17,19 @@ type App struct {
 	Version string `mapstructure:"appversion"`
 }
 
+type DB struct {
+	Name        string `mapstructure:"name"`
+	Port        int    `mapstructure:"port"`
+	SSLMode     Mode   `mapstructure:"sslmode"`
+	Schema      string `mapstructure:"schema"`
+	MaxPoolSize int    `mapstructure:"maxpoolsize"`
+}
+
 type HttpServer struct {
 	ReadTimeout     *time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout    *time.Duration `mapstructure:"write_timeout"`
 	ShutdownTimeout time.Duration  `mapstructure:"shutdown_timeout"`
-}
-
-type DB struct {
-	Name        string `mapstructure:"name"`
-	Port        int    `mapstructure:"port"`
-	SSLMode     Mode   `mapstructure:"SSLMode"`
-	Schema      string `mapstructure:"schema"`
-	MaxPoolSize int    `mapstructure:"MaxPoolSize"`
+	Addr            string         `mapstructure:"addr"`
 }
 
 type Mode string

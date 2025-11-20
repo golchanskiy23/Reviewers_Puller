@@ -1,7 +1,6 @@
 package server
 
 import (
-	"os"
 	"time"
 )
 
@@ -19,11 +18,13 @@ func SetWriteTimeout(duration time.Duration) Option {
 	}
 }
 
-func SetAddr() Option {
+func SetAddr(addr string) Option {
 	return func(srv *Server) {
-		if str := os.Getenv("ADDR"); str != "" {
-			srv.internalServer.Addr = str
+		if env := addr; env != "" {
+			srv.internalServer.Addr = env
+			return
 		}
+		srv.internalServer.Addr = defaultAddr
 	}
 }
 

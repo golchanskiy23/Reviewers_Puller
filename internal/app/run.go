@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"log/slog"
+	"time"
 )
 
 /*
@@ -63,8 +64,14 @@ func Run(cfg *config.Config, logger *slog.Logger) error {
 	s := handlers.CreateNewService(pgRepository)
 	r := chi.NewMux()
 	server.RegisterRoutes(s, r)
-	if err = server.StartServer(cfg, r, logger); err != nil {
-		return fmt.Errorf("start server error: %v", err)
-	}
+	srv := server.StartServer(cfg, r, logger)
+
+	go func() {
+		<-time.After(cfg.Server.ShutdownTimeout)
+		logger.Info("shutdown timeout reached")
+		srv.FullShutdownTimeout(logger)
+	}()
+
+	srv.GracefulShutdown(logger)
 	return nil
 }
