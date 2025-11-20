@@ -1,5 +1,7 @@
 package service
 
+import "Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
+
 type TeamRepository interface {
 	CreateTeam(name string, users []entity.User) (*entity.Team, error)
 	GetTeam(name string) (*entity.Team, error)
