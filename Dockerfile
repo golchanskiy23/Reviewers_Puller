@@ -14,6 +14,8 @@ RUN apt-get update && \
 RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+RUN go get github.com/prometheus/client_golang@latest
+
 COPY . .
 
 RUN go mod download
