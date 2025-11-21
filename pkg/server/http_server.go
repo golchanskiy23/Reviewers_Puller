@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -52,48 +51,53 @@ func NewServer(handler http.Handler, options ...Option) *Server {
 	return server
 }
 
-func (s *Server) FullShutdownTimeout() error {
+func (s *Server) FullShutdownTimeout(logger *slog.Logger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 	defer cancel()
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...\n")
 	if err := s.internalServer.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown filed: %v", err)
 	}
-	log.Println("Server shutdown successfully")
 	return nil
 }
 
-func (s *Server) GracefulShutdown(logger *slog.Logger) error {
+func (s *Server) GracefulShutdown(logger *slog.Logger) {
 	osInterruptChan := make(chan os.Signal, 1)
 	signal.Notify(osInterruptChan, syscall.SIGTERM, syscall.SIGINT)
+	timeoutChan := time.After(s.shutdownTimeout)
 
 	select {
 	case <-osInterruptChan:
 		logger.Info("server interrupted by system or user")
-	case err := <-s.channelErr:
-		logger.Error("server threw an error", slog.Any("error", err))
+	case <-s.channelErr:
+		logger.Error("server error occurred", slog.Any("error", <-s.channelErr))
+	case <-timeoutChan:
+		logger.Info("shutdown timeout reached")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
+	defer cancel()
+
+	logger.Info("shutting down server...")
+	if err := s.internalServer.Shutdown(ctx); err != nil {
+		logger.Error("graceful shutdown failed", slog.Any("error", err))
+	} else {
+		logger.Info("server stopped successfully")
 	}
 
 	close(osInterruptChan)
-	if err := s.FullShutdownTimeout(); err != nil {
-		logger.Error("graceful shutdown failed", slog.Any("error", err))
-		return fmt.Errorf("graceful shutdown collapsed: %w", err)
-	}
-
-	logger.Info("server shutdown completed successfully")
-	return nil
 }
 
-func StartServer(cfg *config.Config, controller *chi.Mux, logger *slog.Logger) error {
+func StartServer(cfg *config.Config, controller *chi.Mux, logger *slog.Logger) *Server {
 	customServer := NewServer(controller,
-		SetReadTimeout(6*time.Second),
-		SetWriteTimeout(6*time.Second),
-		SetAddr(),
+		SetReadTimeout(*cfg.Server.ReadTimeout),
+		SetWriteTimeout(*cfg.Server.WriteTimeout),
+		SetAddr(cfg.Server.Addr),
 		SetShutdownTimeout(cfg.Server.ShutdownTimeout),
 	)
+	fmt.Println(customServer.internalServer.ReadTimeout,
+		customServer.internalServer.WriteTimeout, customServer.internalServer.Addr,
+		customServer.shutdownTimeout)
 	logger.Info("successfully created server\n")
-	if err := customServer.GracefulShutdown(logger); err != nil {
-		return fmt.Errorf("server shutdown error: %v", err)
-	}
-	return nil
+	return customServer
 }
