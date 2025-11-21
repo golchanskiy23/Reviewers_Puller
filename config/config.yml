@@ -1,13 +1,16 @@
 app:
-  Name : "pull request assigning reviewers"
-  AppVersion : "1.0.0"
+  name: "pull request assigning reviewers"
+  appversion: "1.0.0"
 
 database:
-  Name : "prdb"
-  Port : 5433
-  SSLMode : "disable"
-  Schema : "public"
-  MaxPoolSize : 10
+  name: "prdb"
+  port: 5433
+  sslmode: "disable"
+  schema: "public"
+  maxpoolsize: 10
 
 server:
-  ShutdownTimeout : 20
+  read_timeout: 5s
+  write_timeout: 5s
+  shutdown_timeout: 600000s
+  addr: "0.0.0.0:8080"
