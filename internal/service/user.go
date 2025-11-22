@@ -1,5 +1,7 @@
 package service
 
+import "Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
+
 type UserService struct {
 	repo UserRepository
 }

@@ -1,6 +1,9 @@
 package service
 
-import "errors"
+import (
+	"Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
+	"errors"
+)
 
 type TeamService struct {
 	repo TeamRepository
