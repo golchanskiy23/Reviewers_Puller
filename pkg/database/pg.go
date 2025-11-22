@@ -30,10 +30,8 @@ const (
 )
 
 func GetConnection(cfg *config.DB) string {
-	host := os.Getenv("POSTGRES_HOST")
-	if host == "" {
-		host = "localhost"
-	}
+	host := "database"
+
 	dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s",
 		"postgres",
 		os.Getenv("POSTGRES_UNSAFE_USERNAME"),
