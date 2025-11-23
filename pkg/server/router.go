@@ -23,4 +23,6 @@ func RegisterRoutes(h *handlers.Services, r *chi.Mux) {
 		r.Post("/merge", h.PRMergeHandler)
 		r.Post("/reassign", h.PRReassignHandler)
 	})
+
+	r.Get("/metrics", h.MetricsHandler)
 }
