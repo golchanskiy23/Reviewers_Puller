@@ -41,6 +41,10 @@ func initPostgres(cfg *config.Config) (*postgres.DatabaseSource, error) {
 	return db, nil
 }
 
+func initDBRepository(db *postgres.DatabaseSource) database.Repository {
+	return database.CreateNewDBRepository(db)
+}
+
 func Run(cfg *config.Config) error {
 	db, err := initPostgres(cfg)
 	if err != nil {
@@ -50,11 +54,11 @@ func Run(cfg *config.Config) error {
 		db.Close()
 	}(db)
 
-	/*pgRepository := initDBRepository(db)
+	pgRepository := initDBRepository(db)
 	service := CreateNewOrderService(pgRepository)
 	orderController := controller.CreateNewOrderController(orderService)
 	if err = startServer(cfg, orderController); err != nil {
 		return fmt.Errorf("start server error: %v", err)
-	}*/
+	}
 	return nil
 }

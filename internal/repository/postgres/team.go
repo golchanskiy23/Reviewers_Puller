@@ -1,20 +1,38 @@
 package postgres
 
 import (
-	"database/sql"
+	"Service-for-assigning-reviewers-for-Pull-Requests/pkg/database/postgres"
+	"context"
 )
 
-type TeamRepo struct {
-	db *sql.DB
+type Team struct {
+	ID   int
+	Name string
 }
 
-func NewTeamRepo(db *sql.DB) *TeamRepo {
-	return &TeamRepo{db: db}
+type TeamRepository interface {
+	Add(ctx context.Context, team *Team) error
+	Get(ctx context.Context, id int) (*Team, error)
 }
 
-/*
-func (r *TeamRepo) CreateTeam(name string, users []entity.User) (*entity.Team, error) {
-	tx, err := r.db.Begin()
+type teamPGRepository struct {
+	db *postgres.DatabaseSource
+}
+
+func NewTeamPGRepository(db *postgres.DatabaseSource) TeamRepository {
+	return &teamPGRepository{db: db}
+}
+
+func (repo *teamPGRepository) Add(ctx context.Context, team *Team) error {
+	return nil
+}
+
+func (repo *teamPGRepository) Get(ctx context.Context, id int) (*Team, error) {
+	return nil, nil
+}
+
+/*func (r *teamPGRepository) Add(name string, users []entity.User) (*entity.Team, error) {
+	/*tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +61,11 @@ func (r *TeamRepo) CreateTeam(name string, users []entity.User) (*entity.Team, e
 	return &entity.Team{
 		Name: name,
 	}, nil
+	return nil, nil
 }
 
-func (r *TeamRepo) GetTeam(name string) (*entity.Team, error) {
-	t := entity.Team{}
+func (r *teamPGRepository) Get(name string) (*entity.Team, error) {
+	/*t := entity.Team{}
 	err := r.db.QueryRow(`
         SELECT team_name, created_at
         FROM teams
@@ -57,5 +76,5 @@ func (r *TeamRepo) GetTeam(name string) (*entity.Team, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &t, nil
+	return nil, nil
 }*/
