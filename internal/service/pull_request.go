@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"strings"
 	"time"
 
 	"Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
@@ -156,6 +157,87 @@ func (s *PRService) ReassignReviewer(
 		return nil, emptyString, errors.New("PR_MERGED")
 	}
 
+	// If oldReviewerID is empty, interpret as "assign a new reviewer" (append)
+	if oldReviewerID == emptyString {
+		// use PR author team to find candidates (same as create PR flow)
+		author, err := s.userRepo.GetUser(queryCtx, pr.AuthorID)
+		if err != nil {
+			return nil, emptyString, errors.New("NOT_FOUND")
+		}
+
+		// exclude author and any already assigned reviewers
+		exclude := make([]string, 0, len(pr.AssignedReviewers)+1)
+		exclude = append(exclude, pr.AuthorID)
+		exclude = append(exclude, pr.AssignedReviewers...)
+
+		candidates, err := s.userRepo.GetActiveUsersByTeam(queryCtx, author.TeamName, exclude)
+		if err != nil {
+			return nil, emptyString, err
+		}
+		// If PR currently has no reviewers, allow assigning up to 2 candidates (0..2)
+		if len(pr.AssignedReviewers) == 0 {
+			// if no candidates found, it's acceptable — return current PR without error
+			if len(candidates) == zeroLength {
+				return pr, emptyString, nil
+			}
+
+			// shuffle candidates and pick up to 2
+			shuffled := make([]*entity.User, len(candidates))
+			copy(shuffled, candidates)
+			rand.Shuffle(len(shuffled), func(i, j int) {
+				shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+			})
+
+			pick := 2
+			if len(shuffled) < pick {
+				pick = len(shuffled)
+			}
+
+			selected := make([]string, 0, pick)
+			for i := 0; i < pick; i++ {
+				selected = append(selected, shuffled[i].UserID)
+			}
+
+			err = s.repo.UpdateReviewers(queryCtx, prID, selected)
+			if err != nil {
+				return nil, emptyString, err
+			}
+
+			updatedPR, err := s.repo.GetPR(queryCtx, prID)
+			if err != nil {
+				return nil, emptyString, err
+			}
+
+			// return comma-separated list of assigned IDs (may be 1 or 2)
+			return updatedPR, strings.Join(selected, ","), nil
+		}
+
+		// otherwise (existing reviewers present) pick a single reviewer to append
+		if len(candidates) == zeroLength {
+			return nil, emptyString, errors.New("NO_CANDIDATE")
+		}
+
+		//nolint:gosec // math/rand is sufficient for selecting a random reviewer
+		newReviewer := candidates[rand.Intn(len(candidates))]
+
+		newReviewers := make([]string, 0, len(pr.AssignedReviewers)+1)
+		newReviewers = append(newReviewers, pr.AssignedReviewers...)
+		newReviewers = append(newReviewers, newReviewer.UserID)
+
+		err = s.repo.UpdateReviewers(queryCtx, prID, newReviewers)
+		if err != nil {
+			return nil, emptyString, err
+		}
+
+		updatedPR, err := s.repo.GetPR(queryCtx, prID)
+		if err != nil {
+			return nil, emptyString, err
+		}
+
+		return updatedPR, newReviewer.UserID, nil
+	}
+
+	// Otherwise perform replacement of the specified old reviewer
 	found := false
 
 	for _, reviewerID := range pr.AssignedReviewers {

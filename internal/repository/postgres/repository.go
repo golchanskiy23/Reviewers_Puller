@@ -8,6 +8,7 @@ type Repository struct {
 	Teams        TeamRepository
 	Users        UserRepository
 	PullRequests PullRequestRepository
+	Stats        StatsRepository
 }
 
 func CreateNewDBRepository(db *database.DatabaseSource) *Repository {
@@ -15,5 +16,6 @@ func CreateNewDBRepository(db *database.DatabaseSource) *Repository {
 		Teams:        NewTeamPGRepository(db),
 		Users:        NewUserPGRepository(db),
 		PullRequests: NewPullRequestPGRepository(db),
+		Stats:        NewStatsPGRepository(db),
 	}
 }

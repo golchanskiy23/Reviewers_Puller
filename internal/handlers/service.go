@@ -43,6 +43,7 @@ type UserServiceInterface interface {
 		[]*entity.PullRequestShort,
 		error,
 	)
+	MassDeactivate(ctx context.Context, users []entity.User, flag bool) error
 }
 
 type TeamServiceInterface interface {
@@ -51,9 +52,10 @@ type TeamServiceInterface interface {
 }
 
 type Services struct {
-	TeamService TeamServiceInterface
-	UserService UserServiceInterface
-	PRService   PRServiceInterface
+	TeamService  TeamServiceInterface
+	UserService  UserServiceInterface
+	PRService    PRServiceInterface
+	StatsService *service.StatsService
 }
 
 func CreateNewService(repo *postgres.Repository) *Services {
@@ -67,6 +69,7 @@ func CreateNewService(repo *postgres.Repository) *Services {
 			repo.Teams,
 			prService,
 		),
-		PRService: prService,
+		PRService:    prService,
+		StatsService: service.NewStatsService(repo.Stats),
 	}
 }

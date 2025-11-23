@@ -15,6 +15,7 @@ func RegisterRoutes(h *handlers.Services, r *chi.Mux) {
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/setIsActive", h.UserSetIsActiveHandler)
 		r.Get("/getReview", h.UserGetReviewHandler)
+		r.Post("/deactivate", h.UsersMassDeactivateHandler)
 	})
 
 	r.Route("/pullRequest", func(r chi.Router) {
@@ -22,4 +23,6 @@ func RegisterRoutes(h *handlers.Services, r *chi.Mux) {
 		r.Post("/merge", h.PRMergeHandler)
 		r.Post("/reassign", h.PRReassignHandler)
 	})
+
+	r.Get("/metrics", h.MetricsHandler)
 }

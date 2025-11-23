@@ -375,6 +375,43 @@ func TestPRService_ReassignReviewer(t *testing.T) {
 		expectedNewID bool
 	}{
 		{
+			name:          "assign when no existing reviewers (old id empty)",
+			prID:          "pr1",
+			oldReviewerID: "",
+			setupMocks: func(prRepo *MockPullRequestRepository, userRepo *MockUserRepository) {
+				now := time.Now()
+				prRepo.On("GetPR", mock.Anything, "pr1").Return(&entity.PullRequest{
+					PullRequestID:     "pr1",
+					PullRequestName:   "Test PR",
+					AuthorID:          "user1",
+					Status:            entity.OPEN,
+					AssignedReviewers: []string{},
+					CreatedAt:         &now,
+				}, nil).Once()
+				userRepo.On("GetUser", mock.Anything, "user1").Return(&entity.User{
+					UserID:   "user1",
+					Username: "user1",
+					TeamName: "team1",
+					IsActive: true,
+				}, nil)
+				userRepo.On("GetActiveUsersByTeam", mock.Anything, "team1", []string{"user1"}).Return([]*entity.User{
+					{UserID: "user2", Username: "user2", TeamName: "team1", IsActive: true},
+				}, nil)
+				prRepo.On("UpdateReviewers", mock.Anything, "pr1", mock.Anything).Return(nil)
+				prRepo.On("GetPR", mock.Anything, "pr1").Return(&entity.PullRequest{
+					PullRequestID:     "pr1",
+					PullRequestName:   "Test PR",
+					AuthorID:          "user1",
+					Status:            entity.OPEN,
+					AssignedReviewers: []string{"user2"},
+					CreatedAt:         &now,
+				}, nil).Once()
+			},
+			expectedError: "",
+			expectedPR:    true,
+			expectedNewID: true,
+		},
+		{
 			name:          "successful reassignment",
 			prID:          "pr1",
 			oldReviewerID: "user2",
