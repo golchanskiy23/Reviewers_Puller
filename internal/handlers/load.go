@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"Service-for-assigning-reviewers-for-Pull-Requests/pkg/util"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,8 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
+	"Service-for-assigning-reviewers-for-Pull-Requests/pkg/util"
+
 	vegeta "github.com/tsenart/vegeta/v12/lib"
+
+	"Service-for-assigning-reviewers-for-Pull-Requests/internal/entity"
 )
 
 const (

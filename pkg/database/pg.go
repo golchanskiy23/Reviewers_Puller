@@ -1,12 +1,13 @@
 package database
 
 import (
-	"Service-for-assigning-reviewers-for-Pull-Requests/pkg/util"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"time"
+
+	"Service-for-assigning-reviewers-for-Pull-Requests/pkg/util"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -32,7 +33,7 @@ const (
 func GetConnection(cfg *config.DB) string {
 	host := os.Getenv("POSTGRES_HOST")
 	if host == "" {
-		host = ""
+		host = "localhost"
 	}
 	dsn := fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s",
 		"postgres",

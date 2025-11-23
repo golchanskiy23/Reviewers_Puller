@@ -36,7 +36,7 @@ lint:
 
 unit-test:
 	@echo "$(YELLOW)Running unit tests...$(NC)"
-	@$(GO) test ./internal/service/... ./util/... -coverprofile=coverage.out && $(GO) tool cover -func=coverage.out
+	@$(GO) test ./internal/service/... ./pkg/util/... -coverprofile=coverage.out && $(GO) tool cover -func=coverage.out
 	@echo "$(GREEN)✓ Successful tests execution - all tests passed$(NC)"
 
 integration-test:
