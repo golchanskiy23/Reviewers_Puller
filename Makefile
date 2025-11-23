@@ -44,13 +44,16 @@ integration-test:
 	@$(GO) test -v ./tests/integration
 	@echo "$(GREEN)✓ Successful integration tests execution - all tests passed$(NC)"
 
+build:
+	@$(GO) build -o app ./cmd/app
+
 run:
 	@echo "$(YELLOW)Starting application...$(NC)"
 	@echo "$(GREEN)✓ Successful application startup$(NC)"
-	@$(GO) run ./cmd/app/main.go
+	./app
 
 clean:
 	@echo "$(YELLOW)Stopping and removing containers...$(NC)"
 	@$(DOCKER_COMPOSE) down -v
 
-start: docker-up lint unit-test integration-test run clean
+start: docker-up lint unit-test integration-test build run clean
